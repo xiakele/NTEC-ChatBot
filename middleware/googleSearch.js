@@ -1,4 +1,4 @@
-module.exports = async function googleSearch (ctx, browser) {
+module.exports = async function googleSearch (ctx, page) {
   const regex = /\/google\s(.+)/
   const msg = {
     text: ctx.message.text,
@@ -13,7 +13,6 @@ module.exports = async function googleSearch (ctx, browser) {
     return
   }
   const query = regex.exec(msg.text)[1]
-  const page = await browser.newPage()
   await page.goto(`https://www.google.com/search?q=${query}`)
   const result = await page.$eval('.LC20lb', item => {
     return { title: item.innerHTML, url: item.parentNode.href }

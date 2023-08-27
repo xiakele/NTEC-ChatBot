@@ -32,11 +32,13 @@ async function start () {
   bot.command('google', async ctx => {
     console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
       `: '${ctx.message.text}'`)
-    await googleSearch(ctx, browser)
+    const page = await browser.newPage()
+    await googleSearch(ctx, page)
       .catch(err => {
         console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
         ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
       })
+      .finally(() => page.close())
   })
 
   console.log(chalk.inverse('Bot is online.\n'))
