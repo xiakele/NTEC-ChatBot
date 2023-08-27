@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer')
 const { Telegraf } = require('telegraf')
 const path = require('path')
+const chalk = require('chalk')
 const { SocksProxyAgent } = require('socks-proxy-agent')
 const config = require(path.join(__dirname, '/config.json'))
 const bot = config.proxy
@@ -18,7 +19,7 @@ async function start () {
   bot.telegram.setMyCommands([{ command: 'google', description: 'Google for you' }])
   bot.command('google', async (ctx) => await googleSearch(ctx, browser))
 
-  console.log('Bot is online.')
+  console.log(chalk.inverse('Bot is online.'))
   bot.launch({ dropPendingUpdates: true })
 }
 

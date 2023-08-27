@@ -10,6 +10,7 @@
   "author": "xiakele",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^4.1.2",
     "puppeteer": "^21.1.0",
     "socks-proxy-agent": "^8.0.1",
     "telegraf": "^4.12.2"
