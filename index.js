@@ -19,14 +19,18 @@ async function start () {
 
   // Google Search
   bot.telegram.setMyCommands([{ command: 'google', description: 'Google for you' }])
-  bot.command('google', async (ctx) => {
+  bot.command('google', async ctx => {
     console.log(`[MESSAGE] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
       `: '${ctx.message.text}'`)
     await googleSearch(ctx, browser)
+      .catch(err => {
+        console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
+        ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
+      })
   })
 
   console.log(chalk.inverse('Bot is online.\n'))
-  bot.launch({ dropPendingUpdates: true })
+  bot.launch()
 }
 
 start()
