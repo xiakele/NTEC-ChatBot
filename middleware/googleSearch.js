@@ -8,7 +8,6 @@ module.exports = async function googleSearch (ctx, browser) {
     },
     id: ctx.message.message_id
   }
-  console.log(`Message from ${msg.from.firstName}(${msg.from.id}): '${msg.text}'`)
   if (!regex.test(msg.text)) {
     ctx.reply('请输入搜索内容', { reply_to_message_id: msg.id })
     return
