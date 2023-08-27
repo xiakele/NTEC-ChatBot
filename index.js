@@ -7,6 +7,7 @@ const config = require(path.join(__dirname, '/config.json'))
 const bot = config.proxy
   ? new Telegraf(config.token, { telegram: { agent: new SocksProxyAgent(config.proxy) } })
   : new Telegraf(config.token)
+const echo = require(path.join(__dirname, '/middleware/echo'))
 const googleSearch = require(path.join(__dirname, '/middleware/googleSearch'))
 
 process.once('SIGINT', () => bot.stop('SIGINT'))
@@ -17,10 +18,19 @@ async function start () {
     ? await puppeteer.launch({ headless: 'new', args: [`--proxy-server=${config.proxy}`] })
     : await puppeteer.launch({ headless: 'new' })
 
+  // update command list
+  bot.telegram.setMyCommands([{ command: 'echo', description: 'echo!' }, { command: 'google', description: 'Google for you' }])
+
+  // echo
+  bot.command('echo', async ctx => {
+    console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
+      `: '${ctx.message.text}'`)
+    await echo(ctx)
+  })
+
   // Google Search
-  bot.telegram.setMyCommands([{ command: 'google', description: 'Google for you' }])
   bot.command('google', async ctx => {
-    console.log(`[MESSAGE] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
+    console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
       `: '${ctx.message.text}'`)
     await googleSearch(ctx, browser)
       .catch(err => {
