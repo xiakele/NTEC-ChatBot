@@ -1,8 +1,11 @@
 const puppeteer = require('puppeteer')
 const { Telegraf } = require('telegraf')
 const path = require('path')
+const { SocksProxyAgent } = require('socks-proxy-agent')
 const config = require(path.join(__dirname, '/config.json'))
-const bot = new Telegraf(config.token)
+const bot = config.proxy
+  ? new Telegraf(config.token, { telegram: { agent: new SocksProxyAgent(config.proxy) } })
+  : new Telegraf(config.token)
 const googleSearch = require(path.join(__dirname, '/middleware/googleSearch'))
 
 process.once('SIGINT', () => bot.stop('SIGINT'))
