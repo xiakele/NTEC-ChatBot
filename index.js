@@ -13,7 +13,9 @@ process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
 
 async function start () {
-  const browser = await puppeteer.launch({ headless: 'new' })
+  const browser = config.proxy
+    ? await puppeteer.launch({ headless: 'new', args: [`--proxy-server=${config.proxy}`] })
+    : await puppeteer.launch({ headless: 'new' })
 
   // Google Search
   bot.telegram.setMyCommands([{ command: 'google', description: 'Google for you' }])
