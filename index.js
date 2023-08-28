@@ -31,7 +31,7 @@ async function start () {
   // start
   bot.start(ctx => {
     if (ctx.chat.type === 'private') {
-      ctx.reply('你好！这里是NTEC-ChatBot\n输入 /help 获取指令列表')
+      ctx.reply('你好！这里是NTEC ChatBot\n输入 /help 获取指令列表')
     }
   })
 
