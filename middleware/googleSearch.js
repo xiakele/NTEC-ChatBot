@@ -13,7 +13,7 @@ module.exports = async function googleSearch (ctx, page) {
     return
   }
   const query = regex.exec(msg.text)[1]
-  await page.goto(`https://www.google.com/search?q=${query}`)
+  await page.goto(`https://www.google.com/search?q=${query}`, { waitUntil: 'domcontentloaded' })
   const result = await page.$eval('.LC20lb', item => {
     return { title: item.innerHTML, url: item.parentNode.href }
   })
