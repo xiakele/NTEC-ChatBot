@@ -9,6 +9,7 @@ const bot = config.proxy
   : new Telegraf(config.token)
 const echo = require(path.join(__dirname, '/middleware/echo'))
 const googleSearch = require(path.join(__dirname, '/middleware/googleSearch'))
+const wikiSearch = require(path.join(__dirname, '/middleware/wikiSearch'))
 
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
@@ -19,7 +20,11 @@ async function start () {
     : await puppeteer.launch({ headless: 'new' })
 
   // update command list
-  bot.telegram.setMyCommands([{ command: 'echo', description: 'echo!' }, { command: 'google', description: 'Google for you' }])
+  bot.telegram.setMyCommands([
+    { command: 'echo', description: 'echo!' },
+    { command: 'google', description: 'Google for you' },
+    { command: 'wiki', description: 'Search Wikipedia' }
+  ])
 
   // echo
   bot.command('echo', async ctx => {
@@ -28,18 +33,24 @@ async function start () {
     await echo(ctx)
   })
 
-  // Google Search
-  bot.command('google', async ctx => {
+  // Search Handler
+  async function searchHandler (ctx, searchFunc) {
     console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
       `: '${ctx.message.text}'`)
     const page = await browser.newPage()
-    await googleSearch(ctx, page)
+    await searchFunc(ctx, page)
       .catch(err => {
         console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
         ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
       })
       .finally(() => page.close())
-  })
+  }
+
+  // Google Search
+  bot.command('google', async ctx => searchHandler(ctx, googleSearch))
+
+  // Wikipedia Search
+  bot.command('wiki', async ctx => searchHandler(ctx, wikiSearch))
 
   console.log(chalk.inverse('Bot is online.\n'))
   bot.launch()
