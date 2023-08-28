@@ -23,7 +23,7 @@ process.once('SIGTERM', () => bot.stop('SIGTERM'))
 async function start () {
   // start puppeteer
   const browser = config.proxy
-    ? await puppeteer.launch({ headless: 0, args: [`--proxy-server=${config.proxy}`] })
+    ? await puppeteer.launch({ headless: 'new', args: [`--proxy-server=${config.proxy}`] })
     : await puppeteer.launch({ headless: 'new' })
 
   // update command list
