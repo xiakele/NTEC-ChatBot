@@ -14,6 +14,10 @@ module.exports = async function googleSearch (ctx, page) {
   }
   const query = regex.exec(msg.text)[1]
   await page.goto(`https://www.google.com/search?q=${query}`, { waitUntil: 'domcontentloaded' })
+  if (page.url().includes('sorry/index')) {
+    ctx.reply('Google不让人家访问了喵！', { reply_to_message_id: msg.id })
+    return
+  }
   const result = await page.$eval('.LC20lb', item => {
     return { title: item.innerHTML, url: item.parentNode.href }
   })
