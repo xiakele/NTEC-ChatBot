@@ -21,27 +21,28 @@ process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
 
 async function start () {
+  // start puppeteer
   const browser = config.proxy
-    ? await puppeteer.launch({ headless: 'new', args: [`--proxy-server=${config.proxy}`] })
+    ? await puppeteer.launch({ headless: 0, args: [`--proxy-server=${config.proxy}`] })
     : await puppeteer.launch({ headless: 'new' })
 
   // update command list
-  bot.telegram.setMyCommands(command)
+  await bot.telegram.setMyCommands(command)
 
   // start
-  bot.start(ctx => {
+  bot.start(async ctx => {
     if (ctx.chat.type === 'private') {
-      ctx.reply('你好！这里是NTEC ChatBot\n输入 /help 获取指令列表')
+      await ctx.reply('你好！这里是NTEC ChatBot\n输入 /help 获取指令列表')
     }
   })
 
   // help
-  bot.help(ctx => {
+  bot.help(async ctx => {
     let content = '支持下列指令：'
     command.forEach(item => {
       content += `\n/${item.command} - ${item.description}`
     })
-    ctx.reply(content)
+    await ctx.reply(content)
   })
   // echo
   bot.command('echo', async ctx => {
@@ -56,18 +57,18 @@ async function start () {
       `: '${ctx.message.text}'`)
     const page = await browser.newPage()
     await searchFunc(ctx, page)
-      .catch(err => {
+      .catch(async err => {
         console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
-        ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
+        await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
       })
-      .finally(() => page.close())
+      .finally(async () => await page.close())
   }
 
   // Google Search
-  bot.command('google', async ctx => searchHandler(ctx, googleSearch))
+  bot.command('google', async ctx => await searchHandler(ctx, googleSearch))
 
   // Wikipedia Search
-  bot.command('wiki', async ctx => searchHandler(ctx, wikiSearch))
+  bot.command('wiki', async ctx => await searchHandler(ctx, wikiSearch))
 
   console.log(chalk.inverse('Bot is online.\n'))
   bot.launch()
