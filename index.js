@@ -7,6 +7,12 @@ const config = require(path.join(__dirname, '/config.json'))
 const bot = config.proxy
   ? new Telegraf(config.token, { telegram: { agent: new SocksProxyAgent(config.proxy) } })
   : new Telegraf(config.token)
+const command = [
+  { command: 'help', description: 'get help' },
+  { command: 'echo', description: 'echo!' },
+  { command: 'google', description: 'Google for you' },
+  { command: 'wiki', description: 'Search Wikipedia' }
+]
 const echo = require(path.join(__dirname, '/middleware/echo'))
 const googleSearch = require(path.join(__dirname, '/middleware/googleSearch'))
 const wikiSearch = require(path.join(__dirname, '/middleware/wikiSearch'))
@@ -20,12 +26,23 @@ async function start () {
     : await puppeteer.launch({ headless: 'new' })
 
   // update command list
-  bot.telegram.setMyCommands([
-    { command: 'echo', description: 'echo!' },
-    { command: 'google', description: 'Google for you' },
-    { command: 'wiki', description: 'Search Wikipedia' }
-  ])
+  bot.telegram.setMyCommands(command)
 
+  // start
+  bot.start(ctx => {
+    if (ctx.chat.type === 'private') {
+      ctx.reply('你好！这里是NTEC-ChatBot\n输入 /help 获取指令列表')
+    }
+  })
+
+  // help
+  bot.help(ctx => {
+    let content = '支持下列指令：'
+    command.forEach(item => {
+      content += `\n/${item.command} - ${item.description}`
+    })
+    ctx.reply(content)
+  })
   // echo
   bot.command('echo', async ctx => {
     console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
