@@ -44,6 +44,7 @@ async function start () {
     })
     await ctx.reply(content)
   })
+
   // echo
   bot.command('echo', async ctx => {
     console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
@@ -51,12 +52,12 @@ async function start () {
     await echo(ctx)
   })
 
-  // Search Handler
-  async function searchHandler (ctx, searchFunc) {
+  // Request Handler
+  async function requestHandler (ctx, requestFunc) {
     console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
       `: '${ctx.message.text}'`)
     const page = await browser.newPage()
-    await searchFunc(ctx, page)
+    await requestFunc(ctx, page)
       .catch(async err => {
         console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
         await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
@@ -65,10 +66,10 @@ async function start () {
   }
 
   // Google Search
-  bot.command('google', async ctx => await searchHandler(ctx, googleSearch))
+  bot.command('google', async ctx => await requestHandler(ctx, googleSearch))
 
   // Wikipedia Search
-  bot.command('wiki', async ctx => await searchHandler(ctx, wikiSearch))
+  bot.command('wiki', async ctx => await requestHandler(ctx, wikiSearch))
 
   console.log(chalk.inverse('Bot is online.\n'))
   bot.launch()
