@@ -1,4 +1,4 @@
-module.exports = async function wikiSearch (ctx, page) {
+export default async function (ctx, page) {
   const regex = /\/wiki\s(.+)/
   const msg = {
     text: ctx.message.text,

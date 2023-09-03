@@ -1,4 +1,4 @@
-module.exports = async function googleSearch (ctx, page) {
+export default async function (ctx, page) {
   const regex = /\/google\s(.+)/
   const msg = {
     text: ctx.message.text,

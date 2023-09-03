@@ -1,4 +1,4 @@
-module.exports = async function echo (ctx) {
+export default async function (ctx) {
   const command = ctx.message.text
   const regex = /\/echo\s(-M\s)?(.+)/
   if (!regex.test(command)) {
