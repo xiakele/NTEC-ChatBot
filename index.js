@@ -4,9 +4,8 @@ const path = require('path')
 const chalk = require('chalk')
 const { SocksProxyAgent } = require('socks-proxy-agent')
 const config = require(path.join(__dirname, '/config.json'))
-const bot = config.proxy
-  ? new Telegraf(config.token, { telegram: { agent: new SocksProxyAgent(config.proxy) } })
-  : new Telegraf(config.token)
+const socksAgent = config.proxy ? new SocksProxyAgent(config.proxy) : undefined
+const bot = new Telegraf(config.token, { telegram: { agent: socksAgent } })
 const command = [
   { command: 'help', description: 'get help' },
   { command: 'echo', description: 'echo!' },
@@ -29,6 +28,14 @@ async function start () {
   // update command list
   await bot.telegram.setMyCommands(command)
 
+  // log received messages
+  bot.use((ctx, next) => {
+    console.log(`${ctx.message.text.startsWith('/') ? '[COMMAND]' : '[MESSAGE]'} ` +
+      `[from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
+      `: '${ctx.message.text}'`)
+    return next()
+  })
+
   // start
   bot.start(async ctx => {
     if (ctx.chat.type === 'private') {
@@ -46,16 +53,10 @@ async function start () {
   })
 
   // echo
-  bot.command('echo', async ctx => {
-    console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
-      `: '${ctx.message.text}'`)
-    await echo(ctx)
-  })
+  bot.command('echo', async ctx => await echo(ctx))
 
   // Request Handler
   async function requestHandler (ctx, requestFunc) {
-    console.log(`[COMMAND] [from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
-      `: '${ctx.message.text}'`)
     const page = await browser.newPage()
     await requestFunc(ctx, page)
       .catch(async err => {
