@@ -35,7 +35,7 @@ await bot.telegram.setMyCommands(command)
 // log received messages
 bot.use((ctx, next) => {
   console.log(`${ctx.message.text.startsWith('/') ? '[COMMAND]' : '[MESSAGE]'} ` +
-      `[from ${ctx.message.from.first_name}(${ctx.message.from.id})]` +
+      `[from ${ctx.message.from.first_name}(${ctx.message.from.id}) in ${ctx.message.chat.id}]` +
       `: '${ctx.message.text}'`)
   return next()
 })
@@ -48,9 +48,33 @@ bot.start(async ctx => {
 })
 
 // set cron job for weather
-// if (config.autoFetchWeather) {
-//   job('0 0 6 * * *', () => console.log('test'), null, true)
-// }
+async function fetchWeather () {
+  console.log(chalk.inverse('Start fetching today\'s weather'))
+  const chatId = config.autoFetchWeather.chatId[0] // will support an array of chatIds in the future
+  await getWeather(config.autoFetchWeather.location, 'today', socksAgent, config.apiKeys.weather)
+    .then(weatherInfo => {
+      const replyStr = `<b>今日${config.autoFetchWeather.location.name}天气预报</b>\n\n<b>当前天气：</b>\n` +
+    `天气：${weatherInfo.current.condition}\n` +
+    `温度：${weatherInfo.current.temp}℃\n` +
+        `体感温度：${weatherInfo.current.feelsLike}℃\n` +
+        '\n<b>今日天气：</b>\n' +
+        `天气：${weatherInfo.today.condition}\n` +
+        `温度：${weatherInfo.today.minTemp}℃ ~ ${weatherInfo.today.maxTemp}℃\n` +
+        `降雨概率：${weatherInfo.today.rainProbability}%\n` +
+        `\n<b>更新时间：</b>${weatherInfo.current.updateTime}`
+      bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML' })
+      console.log(chalk.inverse('Fetch complete\n'))
+    })
+    .catch(async err => {
+      await bot.telegram.sendMessage(chatId, '发生错误')
+      console.log(chalk.bgRed(`Error occured when fetching weather\n${err}`))
+    })
+}
+if (config.autoFetchWeather) {
+  if (config.autoFetchWeather.enabled) {
+    job('0 0 6 * * *', fetchWeather, null, true)
+  }
+}
 
 // help
 bot.help(async ctx => {
