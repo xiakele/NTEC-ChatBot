@@ -1,6 +1,5 @@
 import puppeteer from 'puppeteer'
 import { Telegraf } from 'telegraf'
-// import path from 'node:path'
 import chalk from 'chalk'
 import { SocksProxyAgent } from 'socks-proxy-agent'
 import { readFile } from 'node:fs/promises'
@@ -9,7 +8,7 @@ import echo from './middleware/echo.js'
 import googleSearch from './middleware/googleSearch.js'
 import wikiSearch from './middleware/wikiSearch.js'
 
-const config = JSON.parse(await readFile('config.json'))
+const config = JSON.parse(await readFile(new URL('config.json', import.meta.url)))
 const socksAgent = config.proxy ? new SocksProxyAgent(config.proxy) : undefined
 const bot = new Telegraf(config.token, { telegram: { agent: socksAgent } })
 const command = [
