@@ -19,14 +19,14 @@ async function getLocation (query, agent) {
       }
       return {
         name: data[0].name,
-        lon: data[0].lon,
-        lat: data[0].lat
+        lat: data[0].lat,
+        lon: data[0].lon
       }
     })
 }
 export async function getWeather (location, type, agent, apiKey) {
   const current = await fetch('https://api.weatherapi.com/v1/current.json?' +
-    `key=${apiKey}&q=${location.lon},${location.lat}&lang=zh`, { agent })
+    `key=${apiKey}&q=${location.lat},${location.lon}&lang=zh`, { agent })
     .then(res => {
       if (!res.ok) {
         throw new Error('Blocked by weatherApi')
