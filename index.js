@@ -85,8 +85,11 @@ bot.command('wiki', async ctx => await requestHandler(ctx, wikiSearch))
 bot.command('weather', async ctx => {
   await weather(ctx, socksAgent, config.apiKeys.weather)
     .catch(async err => {
+      if (err.message === 'No Search Results') {
+        return await ctx.reply('无数据', { reply_to_message_id: ctx.message.message_id })
+      }
       console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
-      await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
+      return await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
     })
 })
 

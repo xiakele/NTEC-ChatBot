@@ -27,18 +27,22 @@ async function getLocation (query, agent) {
 export async function getWeather (location, type, agent, apiKey) {
   const current = await fetch('https://api.weatherapi.com/v1/current.json?' +
     `key=${apiKey}&q=${location.lat},${location.lon}&lang=zh`, { agent })
-    .then(res => {
-      if (!res.ok) {
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        if (data.error.code === 1006) {
+          throw new Error('No Search Results')
+        }
         throw new Error('Blocked by weatherApi')
       }
-      return res.json()
-    })
-    .then(data => {
+      const time = new Date(data.current.last_updated_epoch * 1000)
+      const timeStr = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()} ` +
+        `${time.getHours()}:${time.getMinutes()}`
       return {
         condition: data.current.condition.text,
         temp: data.current.temp_c,
         feelsLike: data.current.feelslike_c,
-        updateTime: data.current.last_updated
+        updateTime: timeStr
       }
     })
   return { current }
@@ -55,7 +59,7 @@ export default async function (ctx, agent, apiKey) {
     `温度：${weatherInfo.current.temp}℃\n` +
     `体感温度：${weatherInfo.current.feelsLike}℃\n`
   if (type === 'current') {
-    replyStr += `\n更新时间：${weatherInfo.current.updateTime}`
+    replyStr += `\n<b>更新时间：</b>${weatherInfo.current.updateTime}`
   }
   await ctx.replyWithHTML(replyStr, { reply_to_message_id: ctx.message.message_id })
 }
