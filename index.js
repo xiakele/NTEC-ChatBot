@@ -119,4 +119,4 @@ bot.command('weather', async ctx => {
 })
 
 console.log(chalk.inverse('Bot is online.\n'))
-bot.launch()
+bot.launch({ allowedUpdates: ['message'] })
