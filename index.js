@@ -34,7 +34,7 @@ await bot.telegram.setMyCommands(command)
 
 // log received messages
 bot.use((ctx, next) => {
-  if (ctx.message.text.startsWith('/')) {
+  if (ctx.message.text && ctx.message.text.startsWith('/')) {
     console.log('[COMMAND]' +
       `[from ${ctx.message.from.first_name}(${ctx.message.from.id}) in ${ctx.message.chat.id}]` +
       `: '${ctx.message.text}'`)
@@ -60,10 +60,10 @@ async function fetchWeather () {
     `温度：${weatherInfo.current.temp}℃\n` +
         `体感温度：${weatherInfo.current.feelsLike}℃\n` +
         '\n<b>今日天气：</b>\n' +
-        `天气：${weatherInfo.today.condition}\n` +
-        `温度：${weatherInfo.today.minTemp}℃ ~ ${weatherInfo.today.maxTemp}℃\n` +
-        `降雨概率：${weatherInfo.today.rainProbability}%\n` +
-        `\n<b>更新时间：</b>${weatherInfo.current.updateTime}`
+        `天气：${weatherInfo.daily[0].condition}\n` +
+        `温度：${weatherInfo.daily[0].minTemp}℃ ~ ${weatherInfo.daily[0].maxTemp}℃\n` +
+        `降雨概率：${weatherInfo.daily[0].rainProbability}%\n` +
+        `\n<b>更新时间：</b>${weatherInfo.updateTime}`
       const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML' })
       await bot.telegram.pinChatMessage(chatId, message.message_id)
       console.log(chalk.inverse('Fetch complete\n'))
