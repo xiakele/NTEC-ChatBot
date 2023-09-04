@@ -54,7 +54,7 @@ async function fetchWeather () {
   console.log(chalk.inverse('Start fetching today\'s weather'))
   const chatId = config.autoFetchWeather.chatId[0] // will support an array of chatIds in the future
   await getWeather(config.autoFetchWeather.location, 'today', socksAgent, config.apiKeys.weather)
-    .then(weatherInfo => {
+    .then(async weatherInfo => {
       const replyStr = `<b>今日${config.autoFetchWeather.location.name}天气预报</b>\n\n<b>当前天气：</b>\n` +
     `天气：${weatherInfo.current.condition}\n` +
     `温度：${weatherInfo.current.temp}℃\n` +
@@ -64,7 +64,8 @@ async function fetchWeather () {
         `温度：${weatherInfo.today.minTemp}℃ ~ ${weatherInfo.today.maxTemp}℃\n` +
         `降雨概率：${weatherInfo.today.rainProbability}%\n` +
         `\n<b>更新时间：</b>${weatherInfo.current.updateTime}`
-      bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML' })
+      const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML' })
+      await bot.telegram.pinChatMessage(chatId, message.message_id)
       console.log(chalk.inverse('Fetch complete\n'))
     })
     .catch(async err => {
