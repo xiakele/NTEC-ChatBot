@@ -48,7 +48,7 @@ export async function getWeather (location, type, agent, apiKey) {
 function dataHandler (data, type) {
   const time = new Date(data.current.last_updated_epoch * 1000)
   const timeStr = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()} ` +
-        `${time.getHours().toString().padStart(2)}:${time.getMinutes().toString().padStart(2)}`
+        `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`
   const result = {
     current: {
       condition: data.current.condition.text,
