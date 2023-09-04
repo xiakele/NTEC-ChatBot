@@ -34,10 +34,12 @@ await bot.telegram.setMyCommands(command)
 
 // log received messages
 bot.use((ctx, next) => {
-  console.log(`${ctx.message.text.startsWith('/') ? '[COMMAND]' : '[MESSAGE]'} ` +
+  if (ctx.message.text.startsWith('/')) {
+    console.log('[COMMAND]' +
       `[from ${ctx.message.from.first_name}(${ctx.message.from.id}) in ${ctx.message.chat.id}]` +
       `: '${ctx.message.text}'`)
-  return next()
+    return next()
+  }
 })
 
 // start
