@@ -72,7 +72,7 @@ async function fetchWeather () {
 }
 if (config.autoFetchWeather) {
   if (config.autoFetchWeather.enabled) {
-    job('0 0 6 * * *', fetchWeather, null, true)
+    job('30 0 6 * * *', fetchWeather, null, true)
   }
 }
 
@@ -112,8 +112,9 @@ bot.command('weather', async ctx => {
       if (err.message === 'No Search Results') {
         return await ctx.reply('无数据', { reply_to_message_id: ctx.message.message_id })
       }
-      console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
-      return await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
+      // console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
+      await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
+      throw err
     })
 })
 
