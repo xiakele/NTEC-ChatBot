@@ -21,8 +21,14 @@ const command = [
   { command: 'weather', description: 'Get weather info' }
 ]
 
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
+process.on('SIGINT', () => {
+  bot.stop('SIGINT')
+  process.exit()
+})
+process.on('SIGTERM', () => {
+  bot.stop('SIGTERM')
+  process.exit()
+})
 
 // start puppeteer
 const browser = config.proxy
