@@ -41,11 +41,11 @@ export async function getWeather (location, type, agent, apiKey) {
         }
         throw new Error('Blocked by weatherApi')
       }
-      return dataHandler(data, type)
+      return weatherDataHandler(data, type)
     })
 }
 
-function dataHandler (data, type) {
+function weatherDataHandler (data, type) {
   const time = new Date(data.current.last_updated_epoch * 1000)
   const timeStr = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()} ` +
         `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`
@@ -73,6 +73,8 @@ function dataHandler (data, type) {
         return {
           date: `${new Date(item.date_epoch * 1000).getMonth() + 1}/${new Date(item.date_epoch * 1000).getDate()}`,
           condition: item.day.condition.text,
+          maxTemp: item.day.maxtemp_c,
+          minTemp: item.day.mintemp_c,
           rainProbability: item.day.daily_chance_of_rain
         }
       })
@@ -106,19 +108,19 @@ export default async function (ctx, agent, apiKey) {
     case 'today':
       replyStr += '\n<b>今日天气：</b>\n' +
         `天气：${weatherInfo.daily[0].condition}\n` +
-        `温度：${weatherInfo.daily[0].minTemp}℃ ~ ${weatherInfo.daily[0].maxTemp}℃\n` +
+        `温度：${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
         `降雨概率：${weatherInfo.daily[0].rainProbability}%\n`
       break
     case 'daily':
       replyStr += '\n<b>未来三天天气：</b>\n'
       for (const day of weatherInfo.daily) {
-        replyStr += `${day.date} ${day.condition} ${day.rainProbability}%\n`
+        replyStr += `${day.date}  ${day.condition}  ${day.minTemp}~${day.maxTemp}℃  ${day.rainProbability}%\n`
       }
       break
     case 'hourly':
       replyStr += '\n<b>未来每小时天气：</b>\n'
       for (const hour of weatherInfo.hourly) {
-        replyStr += `${hour.time} ${hour.condition} ${hour.rainProbability}%\n`
+        replyStr += `${hour.time}  ${hour.condition}  ${hour.temp}℃  ${hour.rainProbability}%\n`
       }
   }
   replyStr += `\n<b>更新时间：</b>${weatherInfo.updateTime}`

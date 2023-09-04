@@ -67,7 +67,7 @@ async function fetchWeather () {
         `体感温度：${weatherInfo.current.feelsLike}℃\n` +
         '\n<b>今日天气：</b>\n' +
         `天气：${weatherInfo.daily[0].condition}\n` +
-        `温度：${weatherInfo.daily[0].minTemp}℃ ~ ${weatherInfo.daily[0].maxTemp}℃\n` +
+        `温度：${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
         `降雨概率：${weatherInfo.daily[0].rainProbability}%\n` +
         `\n<b>更新时间：</b>${weatherInfo.updateTime}`
       const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML' })
