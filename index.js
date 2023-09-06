@@ -56,7 +56,6 @@ bot.start(async ctx => {
 })
 
 // set cron job for weather
-let retried = false
 async function fetchWeather () {
   console.log(chalk.inverse('Start fetching today\'s weather'))
   const chatIds = config.autoFetchWeather.chatId
@@ -79,20 +78,11 @@ async function fetchWeather () {
       })
       console.log(chalk.inverse('Send weather info complete\n'))
     })
-    .catch(async err => {
-      if (!retried) {
-        setTimeout(fetchWeather, 5 * 60 * 1000)
-        console.log(chalk.bgYellow(`Error occured when fetching weather, retry scheduled in 5 minutes${err}`))
-        retried = true
-      } else {
-        console.log(chalk.bgRed(`Error occured when retry fetching weather\n${err}`))
-        retried = false
-      }
-    })
+    .catch(async err => console.log(chalk.bgRed(`Error occured when fetching weather\n${err}`)))
 }
 if (config.autoFetchWeather) {
   if (config.autoFetchWeather.enabled) {
-    job('10 23 23 * * *', fetchWeather, null, true)
+    job('0 0 6 * * *', fetchWeather, null, true)
   }
 }
 
