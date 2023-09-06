@@ -64,7 +64,10 @@ function weatherDataHandler (data, type) {
           condition: data.forecast.forecastday[0].day.condition.text,
           maxTemp: data.forecast.forecastday[0].day.maxtemp_c,
           minTemp: data.forecast.forecastday[0].day.mintemp_c,
-          rainProbability: data.forecast.forecastday[0].day.daily_chance_of_rain
+          willRain: data.forecast.forecastday[0].day.daily_will_it_rain,
+          rainProbability: data.forecast.forecastday[0].day.daily_chance_of_rain,
+          rainHours: data.forecast.forecastday[0].hour.filter(val => val.will_it_rain)
+            .map(hour => hour.time.split(' ')[1])
         }
       ]
       break
@@ -109,7 +112,12 @@ export default async function (ctx, agent, apiKey) {
       replyStr += '\n<b>今日天气：</b>\n' +
         `天气：${weatherInfo.daily[0].condition}\n` +
         `温度：${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
-        `降雨概率：${weatherInfo.daily[0].rainProbability}%\n`
+        `降雨概率：${weatherInfo.daily[0].rainProbability}%`
+      if (weatherInfo.daily[0].willRain) {
+        replyStr += `\n降雨时段：${weatherInfo.daily[0].rainHours.join(', ')}\n`
+      } else {
+        replyStr += '（无显著降雨）\n'
+      }
       break
     case 'daily':
       replyStr += '\n<b>未来三天天气：</b>\n'

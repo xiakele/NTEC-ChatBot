@@ -56,32 +56,43 @@ bot.start(async ctx => {
 })
 
 // set cron job for weather
+let retried = false
 async function fetchWeather () {
   console.log(chalk.inverse('Start fetching today\'s weather'))
-  const chatId = config.autoFetchWeather.chatId[0] // will support an array of chatIds in the future
+  const chatIds = config.autoFetchWeather.chatId
   await getWeather(config.autoFetchWeather.location, 'today', socksAgent, config.apiKeys.weather)
     .then(async weatherInfo => {
-      const replyStr = `<b>今日${config.autoFetchWeather.location.name}天气预报</b>\n\n<b>当前天气：</b>\n` +
-    `天气：${weatherInfo.current.condition}\n` +
-    `温度：${weatherInfo.current.temp}℃\n` +
-        `体感温度：${weatherInfo.current.feelsLike}℃\n` +
-        '\n<b>今日天气：</b>\n' +
-        `天气：${weatherInfo.daily[0].condition}\n` +
-        `温度：${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
-        `降雨概率：${weatherInfo.daily[0].rainProbability}%\n` +
-        `\n<b>更新时间：</b>${weatherInfo.updateTime}`
-      const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML' })
-      await bot.telegram.pinChatMessage(chatId, message.message_id)
-      console.log(chalk.inverse('Fetch complete\n'))
+      let replyStr = `<b>今日${config.autoFetchWeather.location.name}天气预报</b>\n\n` +
+        `<b>天气：</b>${weatherInfo.daily[0].condition}\n` +
+        `<b>温度：</b>${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
+        `<b>降雨概率：</b>${weatherInfo.daily[0].rainProbability}%`
+      if (weatherInfo.daily[0].willRain) {
+        replyStr += `\n<b>降雨时段：</b>${weatherInfo.daily[0].rainHours.join(', ')}\n`
+      } else {
+        replyStr += '（无显著降雨）\n'
+      }
+      replyStr += `\n<b>更新时间：</b>${weatherInfo.updateTime}`
+      console.log(chalk.inverse('Fetch complete'))
+      chatIds.forEach(async chatId => {
+        const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML' })
+        await bot.telegram.pinChatMessage(chatId, message.message_id)
+      })
+      console.log(chalk.inverse('Send weather info complete\n'))
     })
     .catch(async err => {
-      await bot.telegram.sendMessage(chatId, '发生错误')
-      console.log(chalk.bgRed(`Error occured when fetching weather\n${err}`))
+      if (!retried) {
+        setTimeout(fetchWeather, 5 * 60 * 1000)
+        console.log(chalk.bgYellow(`Error occured when fetching weather, retry scheduled in 5 minutes${err}`))
+        retried = true
+      } else {
+        console.log(chalk.bgRed(`Error occured when retry fetching weather\n${err}`))
+        retried = false
+      }
     })
 }
 if (config.autoFetchWeather) {
   if (config.autoFetchWeather.enabled) {
-    job('30 0 6 * * *', fetchWeather, null, true)
+    job('10 23 23 * * *', fetchWeather, null, true)
   }
 }
 
