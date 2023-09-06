@@ -82,7 +82,7 @@ async function fetchWeather () {
 }
 if (config.autoFetchWeather) {
   if (config.autoFetchWeather.enabled) {
-    job('0 0 6 * * *', fetchWeather, null, true)
+    job('30 0 6 * * *', fetchWeather, null, true)
   }
 }
 
