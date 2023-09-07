@@ -65,7 +65,7 @@ async function fetchWeather () {
         `<b>天气：</b>${weatherInfo.daily[0].condition}\n` +
         `<b>温度：</b>${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
         `<b>降雨概率：</b>${weatherInfo.daily[0].rainProbability}%`
-      if (weatherInfo.daily[0].willRain) {
+      if (weatherInfo.daily[0].willRain && weatherInfo.daily[0].rainHours.length) {
         replyStr += `\n<b>降雨时段：</b>${weatherInfo.daily[0].rainHours.join(', ')}\n`
       } else {
         replyStr += '（无显著降雨）\n'

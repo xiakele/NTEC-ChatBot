@@ -113,7 +113,7 @@ export default async function (ctx, agent, apiKey) {
         `天气：${weatherInfo.daily[0].condition}\n` +
         `温度：${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
         `降雨概率：${weatherInfo.daily[0].rainProbability}%`
-      if (weatherInfo.daily[0].willRain) {
+      if (weatherInfo.daily[0].willRain && weatherInfo.daily[0].rainHours.length) {
         replyStr += `\n降雨时段：${weatherInfo.daily[0].rainHours.join(', ')}\n`
       } else {
         replyStr += '（无显著降雨）\n'
