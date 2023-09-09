@@ -18,6 +18,6 @@ export default async function (ctx, page) {
     return { title: item.title, url: item.href }
   })
   await page.goto(result.url.replace('/wiki/', '/zh-cn/'), { waitUntil: 'domcontentloaded' })
-  const simpResult = { title: await page.$eval('.mw-page-title-main', item => item.innerHTML), url: page.url() }
+  const simpResult = { title: (await page.title()).match(/(.*) - 维基百科/)[1], url: page.url() }
   await ctx.replyWithHTML(`搜索结果如下：\n中文：<a href='${result.url}'>${result.title}</a>\n简中：<a href='${simpResult.url}'>${simpResult.title}</a>`, { reply_to_message_id: msg.id })
 }
