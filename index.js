@@ -59,7 +59,7 @@ bot.start(async ctx => {
 async function fetchWeather () {
   console.log(chalk.inverse('Start fetching today\'s weather'))
   const chatIds = config.autoFetchWeather.chatId
-  await getWeather(config.autoFetchWeather.location, 'today', socksAgent, config.apiKeys.weather)
+  await getWeather(config.autoFetchWeather.location, socksAgent, config.apiKeys.weather)
     .then(async weatherInfo => {
       let replyStr = `<b>今日${config.autoFetchWeather.location.name}天气预报</b>\n\n` +
         `<b>天气：</b>${weatherInfo.daily[0].condition}\n` +
@@ -84,10 +84,8 @@ async function fetchWeather () {
     })
     .catch(async err => console.log(chalk.bgRed(`Error occured when fetching weather\n${err}`)))
 }
-if (config.autoFetchWeather) {
-  if (config.autoFetchWeather.enabled) {
-    job('30 0 6 * * *', fetchWeather, null, true)
-  }
+if (config.autoFetchWeather && config.autoFetchWeather.enabled) {
+  job('30 0 6 * * *', fetchWeather, null, true)
 }
 
 // help

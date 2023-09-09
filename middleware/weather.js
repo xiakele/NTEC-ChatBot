@@ -30,7 +30,7 @@ async function getLocation (query, agent) {
     })
 }
 
-export async function getWeather (location, type, agent, apiKey) {
+export async function getWeather (location, agent, apiKey) {
   return await fetch('https://api.weatherapi.com/v1/forecast.json?' +
     `key=${apiKey}&q=${location.lat},${location.lon}&lang=zh&days=3`, { agent })
     .then(res => res.json())
@@ -41,60 +41,43 @@ export async function getWeather (location, type, agent, apiKey) {
         }
         throw new Error('Blocked by weatherApi')
       }
-      return weatherDataHandler(data, type)
+      return weatherDataHandler(data)
     })
 }
 
-function weatherDataHandler (data, type) {
+function weatherDataHandler (data) {
   const time = new Date(data.current.last_updated_epoch * 1000)
   const timeStr = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()} ` +
         `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`
-  const result = {
+  return {
     current: {
       condition: data.current.condition.text,
       temp: data.current.temp_c,
       feelsLike: data.current.feelslike_c
     },
+    daily: data.forecast.forecastday.map(item => {
+      return {
+        date: `${new Date(item.date_epoch * 1000).getMonth() + 1}/${new Date(item.date_epoch * 1000).getDate()}`,
+        condition: item.day.condition.text,
+        maxTemp: item.day.maxtemp_c,
+        minTemp: item.day.mintemp_c,
+        willRain: item.day.daily_will_it_rain,
+        rainProbability: item.day.daily_chance_of_rain,
+        rainHours: item.hour.filter(val => val.will_it_rain)
+          .map(hour => hour.time.split(' ')[1])
+      }
+    }),
+    hourly: data.forecast.forecastday[0].hour.slice(new Date().getHours())
+      .map(hour => {
+        return {
+          time: hour.time.split(' ')[1],
+          temp: hour.temp_c,
+          condition: hour.condition.text,
+          rainProbability: hour.chance_of_rain
+        }
+      }),
     updateTime: timeStr
   }
-  switch (type) {
-    case 'today':
-      result.daily = [
-        {
-          condition: data.forecast.forecastday[0].day.condition.text,
-          maxTemp: data.forecast.forecastday[0].day.maxtemp_c,
-          minTemp: data.forecast.forecastday[0].day.mintemp_c,
-          willRain: data.forecast.forecastday[0].day.daily_will_it_rain,
-          rainProbability: data.forecast.forecastday[0].day.daily_chance_of_rain,
-          rainHours: data.forecast.forecastday[0].hour.filter(val => val.will_it_rain)
-            .map(hour => hour.time.split(' ')[1])
-        }
-      ]
-      break
-    case 'daily':
-      result.daily = data.forecast.forecastday.map(item => {
-        return {
-          date: `${new Date(item.date_epoch * 1000).getMonth() + 1}/${new Date(item.date_epoch * 1000).getDate()}`,
-          condition: item.day.condition.text,
-          maxTemp: item.day.maxtemp_c,
-          minTemp: item.day.mintemp_c,
-          rainProbability: item.day.daily_chance_of_rain
-        }
-      })
-      break
-    case 'hourly':
-      result.hourly = data.forecast.forecastday[0].hour.slice(new Date().getHours())
-        .map(hour => {
-          return {
-            time: hour.time.split(' ')[1],
-            temp: hour.temp_c,
-            condition: hour.condition.text,
-            rainProbability: hour.chance_of_rain
-          }
-        })
-      break
-  }
-  return result
 }
 
 export default async function (ctx, agent, apiKey) {
@@ -102,7 +85,7 @@ export default async function (ctx, agent, apiKey) {
   const query = regex.exec(ctx.message.text)[2] || 'Pudong'
   const type = regex.exec(ctx.message.text)[1] || 'current'
   const locationInfo = await getLocation(query, agent)
-  const weatherInfo = await getWeather(locationInfo, type, agent, apiKey)
+  const weatherInfo = await getWeather(locationInfo, agent, apiKey)
   let replyStr = `<b>位置：</b>${locationInfo.place.filter(Boolean).join(', ')}\n\n<b>当前天气：</b>\n` +
     `天气：${weatherInfo.current.condition}\n` +
     `温度：${weatherInfo.current.temp}℃\n` +
