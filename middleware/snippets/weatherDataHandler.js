@@ -107,8 +107,8 @@ export function abroadReplyGenerator (locationInfo, weatherInfo, type) {
         replyStr += `${hour.time}  ${hour.condition}  ${hour.temp}℃  ${hour.rainProbability}%\n`
       }
   }
-  replyStr += `\n<b>更新时间：</b>${weatherInfo.updateTime}\n` +
-    '<b>数据来源：</b><a href="https://www.weatherapi.com/">WeatherAPI</a>'
+  replyStr += `<b>更新时间：</b>${weatherInfo.updateTime}\n` +
+    '\n<b>数据来源：</b><a href="https://www.weatherapi.com/">WeatherAPI</a>'
   return replyStr
 }
 
