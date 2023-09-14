@@ -1,4 +1,10 @@
 import fetch from 'node-fetch'
+import {
+  formatUpdateTime,
+  weatherApiDataHandler,
+  domesticReplyGenerator,
+  abroadReplyGenerator
+} from './snippets/weatherDataHandler.js'
 
 async function getLocation (query, agent) {
   return await fetch(` https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=geocodejson&addressdetails=1`, {
@@ -30,7 +36,7 @@ async function getLocation (query, agent) {
     })
 }
 
-export async function getWeather (location, agent, apiKey) {
+export async function getAbroadWeather (location, agent, apiKey) {
   return await fetch('https://api.weatherapi.com/v1/forecast.json?' +
     `key=${apiKey}&q=${location.lat},${location.lon}&lang=zh&days=3`, { agent })
     .then(res => res.json())
@@ -41,83 +47,85 @@ export async function getWeather (location, agent, apiKey) {
         }
         throw new Error('Blocked by weatherApi')
       }
-      return weatherDataHandler(data)
+      return weatherApiDataHandler(data)
     })
 }
 
-function weatherDataHandler (data) {
-  const time = new Date(data.current.last_updated_epoch * 1000)
-  const timeStr = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()} ` +
-        `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`
-  return {
-    current: {
-      condition: data.current.condition.text,
-      temp: data.current.temp_c,
-      feelsLike: data.current.feelslike_c
-    },
-    daily: data.forecast.forecastday.map(item => {
-      return {
-        date: `${new Date(item.date_epoch * 1000).getMonth() + 1}/${new Date(item.date_epoch * 1000).getDate()}`,
-        condition: item.day.condition.text,
-        maxTemp: item.day.maxtemp_c,
-        minTemp: item.day.mintemp_c,
-        willRain: item.day.daily_will_it_rain,
-        rainProbability: item.day.daily_chance_of_rain,
-        rainHours: item.hour.filter(val => val.will_it_rain)
-          .map(hour => hour.time.split(' ')[1])
+export async function qweatherFetch (baseUrl, location, apiKey) {
+  return await fetch(`${baseUrl}?location=${location.lon},${location.lat}&key=${apiKey}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.code === '404' || data.code === '204') {
+        throw new Error('No Search Results')
       }
-    }),
-    hourly: data.forecast.forecastday[0].hour.slice(new Date().getHours())
-      .map(hour => {
-        return {
-          time: hour.time.split(' ')[1],
-          temp: hour.temp_c,
-          condition: hour.condition.text,
-          rainProbability: hour.chance_of_rain
-        }
-      }),
-    updateTime: timeStr
+      if (data.code !== '200') {
+        throw new Error('Blocked by Qweather')
+      }
+      return data
+    })
+}
+async function getDomesticWeather (location, type, apiKey) {
+  const result = await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/now', location, apiKey)
+    .then(data => ({
+      current: {
+        condition: data.now.text,
+        temp: data.now.temp
+      }
+    }))
+  await qweatherFetch('https://devapi.qweather.com/v7/minutely/5m', location, apiKey)
+    .then(data => {
+      result.current.rainForecast = data.summary
+      result.current.updateTime = formatUpdateTime(data.updateTime)
+    })
+  switch (type) {
+    case 'today':
+    case 'daily':
+      await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/7d', location, apiKey)
+        .then(data => {
+          if (new Date(data.daily[0].fxDate).getDate() < new Date().getDate()) {
+            data.daily.shift()
+          }
+          result.daily = data.daily.map(day => ({
+            date: `${new Date(day.fxDate).getMonth() + 1}/${new Date(day.fxDate).getDate()}`,
+            condition: {
+              day: day.textDay,
+              night: day.textNight
+            },
+            maxTemp: day.tempMax,
+            minTemp: day.tempMin,
+            precipitation: day.precip
+          }))
+          result.daily.push(formatUpdateTime(data.updateTime))
+        })
+      break
+    case 'hourly':
+      await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/24h', location, apiKey)
+        .then(data => {
+          result.hourly = data.hourly.map(hour => ({
+            time: new Date(hour.fxTime).getHours().toString().padStart(2, '0') + ':00',
+            condition: hour.text,
+            temp: hour.temp,
+            precipitation: hour.precip
+          }))
+          result.hourly.push(formatUpdateTime(data.updateTime))
+        })
+      break
   }
+  return result
 }
 
-export default async function (ctx, agent, apiKey) {
+export default async function (ctx, agent, apiKeys) {
   const regex = /\/weather(?:\s(current|today|daily|hourly))?(\s.+)?/
   const query = regex.exec(ctx.message.text)[2] || 'Pudong'
   const type = regex.exec(ctx.message.text)[1] || 'current'
   const locationInfo = await getLocation(query, agent)
-  const weatherInfo = await getWeather(locationInfo, agent, apiKey)
-  let replyStr = `<b>位置：</b>${locationInfo.place.filter(Boolean).join(', ')}\n\n<b>当前天气：</b>\n` +
-    `天气：${weatherInfo.current.condition}\n` +
-    `温度：${weatherInfo.current.temp}℃\n` +
-    `体感温度：${weatherInfo.current.feelsLike}℃\n`
-  switch (type) {
-    case 'today':
-      replyStr += '\n<b>今日天气：</b>\n' +
-        `天气：${weatherInfo.daily[0].condition}\n` +
-        `温度：${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
-        `降雨概率：${weatherInfo.daily[0].rainProbability}%`
-      if (weatherInfo.daily[0].rainProbability) {
-        if (weatherInfo.daily[0].willRain && weatherInfo.daily[0].rainHours.length) {
-          replyStr += `\n降雨时段：${weatherInfo.daily[0].rainHours.join(', ')}\n`
-        } else {
-          replyStr += '（无显著降雨）\n'
-        }
-      } else {
-        replyStr += '\n'
-      }
-      break
-    case 'daily':
-      replyStr += '\n<b>未来三天天气：</b>\n'
-      for (const day of weatherInfo.daily) {
-        replyStr += `${day.date}  ${day.condition}  ${day.minTemp}~${day.maxTemp}℃  ${day.rainProbability}%\n`
-      }
-      break
-    case 'hourly':
-      replyStr += '\n<b>未来每小时天气：</b>\n'
-      for (const hour of weatherInfo.hourly) {
-        replyStr += `${hour.time}  ${hour.condition}  ${hour.temp}℃  ${hour.rainProbability}%\n`
-      }
+  let replyStr = ''
+  if (locationInfo.place[3] === '中国') {
+    const weatherInfo = await getDomesticWeather(locationInfo, type, apiKeys.qweather)
+    replyStr = domesticReplyGenerator(locationInfo, weatherInfo, type)
+  } else {
+    const weatherInfo = await getAbroadWeather(locationInfo, agent, apiKeys.weatherApi)
+    replyStr = abroadReplyGenerator(locationInfo, weatherInfo, type)
   }
-  replyStr += `\n<b>更新时间：</b>${weatherInfo.updateTime}`
-  await ctx.replyWithHTML(replyStr, { reply_to_message_id: ctx.message.message_id })
+  await ctx.replyWithHTML(replyStr, { reply_to_message_id: ctx.message.message_id, disable_web_page_preview: true })
 }

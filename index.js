@@ -8,7 +8,8 @@ import { job } from 'cron'
 import echo from './middleware/echo.js'
 import googleSearch from './middleware/googleSearch.js'
 import wikiSearch from './middleware/wikiSearch.js'
-import weather, { getWeather } from './middleware/weather.js'
+import weather, { qweatherFetch } from './middleware/weather.js'
+import { fetchDataHandler } from './middleware/snippets/weatherDataHandler.js'
 
 const config = JSON.parse(await readFile(new URL('config.json', import.meta.url)))
 const socksAgent = config.proxy ? new SocksProxyAgent(config.proxy) : undefined
@@ -59,30 +60,15 @@ bot.start(async ctx => {
 async function fetchWeather () {
   console.log(chalk.inverse('Start fetching today\'s weather'))
   const chatIds = config.autoFetchWeather.chatId
-  await getWeather(config.autoFetchWeather.location, socksAgent, config.apiKeys.weather)
-    .then(async weatherInfo => {
-      let replyStr = `<b>今日${config.autoFetchWeather.location.name}天气预报</b>\n\n` +
-        `<b>天气：</b>${weatherInfo.daily[0].condition}\n` +
-        `<b>温度：</b>${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n` +
-        `<b>降雨概率：</b>${weatherInfo.daily[0].rainProbability}%`
-      if (weatherInfo.daily[0].rainProbability) {
-        if (weatherInfo.daily[0].willRain && weatherInfo.daily[0].rainHours.length) {
-          replyStr += `\n<b>降雨时段：</b>${weatherInfo.daily[0].rainHours.join(', ')}\n`
-        } else {
-          replyStr += '（无显著降雨）\n'
-        }
-      } else {
-        replyStr += '\n'
-      }
-      replyStr += `\n<b>更新时间：</b>${weatherInfo.updateTime}`
-      console.log(chalk.inverse('Fetch complete'))
-      chatIds.forEach(async chatId => {
-        const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML' })
-        await bot.telegram.pinChatMessage(chatId, message.message_id)
-      })
-      console.log(chalk.inverse('Send weather info complete\n'))
-    })
-    .catch(async err => console.log(chalk.bgRed(`Error occured when fetching weather\n${err}`)))
+  const dayInfo = await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/7d', config.autoFetchWeather.location, config.apiKeys.qweather)
+  const hourlyInfo = await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/24h', config.autoFetchWeather.location, config.apiKeys.qweather)
+  const replyStr = fetchDataHandler(dayInfo, hourlyInfo, config.autoFetchWeather.location.name)
+  console.log(chalk.inverse('Fetch complete'))
+  chatIds.forEach(async chatId => {
+    const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML', disable_web_page_preview: true })
+    await bot.telegram.pinChatMessage(chatId, message.message_id)
+  })
+  console.log(chalk.inverse('Send weather info complete\n'))
 }
 if (config.autoFetchWeather && config.autoFetchWeather.enabled) {
   job('30 0 6 * * *', fetchWeather, null, true)
@@ -119,7 +105,7 @@ bot.command('wiki', async ctx => await requestHandler(ctx, wikiSearch))
 
 // Get weather info
 bot.command('weather', async ctx => {
-  await weather(ctx, socksAgent, config.apiKeys.weather)
+  await weather(ctx, socksAgent, config.apiKeys)
     .catch(async err => {
       if (err.message === 'No Search Results') {
         return await ctx.reply('无数据', { reply_to_message_id: ctx.message.message_id })
