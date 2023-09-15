@@ -65,11 +65,12 @@ export async function qweatherFetch (baseUrl, location, apiKey) {
     })
 }
 async function getDomesticWeather (location, type, apiKey) {
-  const result = await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/now', location, apiKey)
+  const result = await qweatherFetch('https://devapi.qweather.com/v7/weather/now', location, apiKey)
     .then(data => ({
       current: {
         condition: data.now.text,
-        temp: data.now.temp
+        temp: data.now.temp,
+        feelsLike: data.now.feelsLike
       }
     }))
   await qweatherFetch('https://devapi.qweather.com/v7/minutely/5m', location, apiKey)
@@ -80,7 +81,7 @@ async function getDomesticWeather (location, type, apiKey) {
   switch (type) {
     case 'today':
     case 'daily':
-      await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/7d', location, apiKey)
+      await qweatherFetch('https://devapi.qweather.com/v7/weather/7d', location, apiKey)
         .then(data => {
           if (new Date(data.daily[0].fxDate).getDate() < new Date().getDate()) {
             data.daily.shift()
@@ -99,7 +100,7 @@ async function getDomesticWeather (location, type, apiKey) {
         })
       break
     case 'hourly':
-      await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/24h', location, apiKey)
+      await qweatherFetch('https://devapi.qweather.com/v7/weather/24h', location, apiKey)
         .then(data => {
           result.hourly = data.hourly.map(hour => ({
             time: new Date(hour.fxTime).getHours().toString().padStart(2, '0') + ':00',

@@ -38,9 +38,9 @@ export function weatherApiDataHandler (data) {
 
 export function domesticReplyGenerator (locationInfo, weatherInfo, type) {
   let replyStr = `<b>位置：</b>${locationInfo.place.filter(Boolean).join(', ')}\n\n<b>当前天气：</b>\n` +
-    `天气：${weatherInfo.current.condition}\n` +
+    `天气：${weatherInfo.current.condition}，${weatherInfo.current.rainForecast}\n` +
     `温度：${weatherInfo.current.temp}℃\n` +
-    `未来两小时：${weatherInfo.current.rainForecast}\n` +
+    `体感温度：${weatherInfo.current.feelsLike}℃\n` +
     `<b>更新时间：</b>${weatherInfo.current.updateTime}\n`
   switch (type) {
     case 'today':
