@@ -42,7 +42,8 @@ await bot.telegram.setMyCommands(command)
 // log received messages
 bot.use((ctx, next) => {
   if (ctx.message.text && ctx.message.text.startsWith('/')) {
-    console.log('[COMMAND]' +
+    console.log(`[${new Date().toISOString()}]` +
+      '[COMMAND]' +
       `[from ${ctx.message.from.first_name}(${ctx.message.from.id}) in ${ctx.message.chat.id}]` +
       `: '${ctx.message.text}'`)
     return next()
@@ -71,7 +72,7 @@ async function fetchWeather () {
   console.log(chalk.inverse('Send weather info complete\n'))
 }
 if (config.autoFetchWeather && config.autoFetchWeather.enabled) {
-  job('25 5 17 * * *', fetchWeather, null, true)
+  job('30 0 6 * * *', fetchWeather, null, true)
 }
 
 // help
