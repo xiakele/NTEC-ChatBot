@@ -8,9 +8,9 @@ import { job } from 'cron'
 import echo from './middleware/echo.js'
 import googleSearch from './middleware/googleSearch.js'
 import wikiSearch from './middleware/wikiSearch.js'
-import weather, { qweatherFetch } from './middleware/weather.js'
-import { fetchDataHandler } from './middleware/snippets/weatherDataHandler.js'
-
+import weather from './middleware/weather.js'
+import { getDomesticWeather } from './middleware/snippets/weatherDataFetcher.js'
+import { forecastGenerator } from './middleware/snippets/weatherFormatter.js'
 const config = JSON.parse(await readFile(new URL('config.json', import.meta.url)))
 const socksAgent = config.proxy ? new SocksProxyAgent(config.proxy) : undefined
 const bot = new Telegraf(config.token, { telegram: { agent: socksAgent } })
@@ -60,9 +60,9 @@ bot.start(async ctx => {
 async function fetchWeather () {
   console.log(chalk.inverse('Start fetching today\'s weather'))
   const chatIds = config.autoFetchWeather.chatId
-  const dayInfo = await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/7d', config.autoFetchWeather.location, config.apiKeys.qweather)
-  const hourlyInfo = await qweatherFetch('https://devapi.qweather.com/v7/grid-weather/24h', config.autoFetchWeather.location, config.apiKeys.qweather)
-  const replyStr = fetchDataHandler(dayInfo, hourlyInfo, config.autoFetchWeather.location.name)
+  const dailyData = await getDomesticWeather(config.autoFetchWeather.location, 'today', config.apiKeys.qweather)
+  const hourlyData = await getDomesticWeather(config.autoFetchWeather.location, 'hourly', config.apiKeys.qweather)
+  const replyStr = forecastGenerator(dailyData, hourlyData, config.autoFetchWeather.location.name)
   console.log(chalk.inverse('Fetch complete'))
   chatIds.forEach(async chatId => {
     const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML', disable_web_page_preview: true })
@@ -71,7 +71,7 @@ async function fetchWeather () {
   console.log(chalk.inverse('Send weather info complete\n'))
 }
 if (config.autoFetchWeather && config.autoFetchWeather.enabled) {
-  job('30 0 6 * * *', fetchWeather, null, true)
+  job('25 5 17 * * *', fetchWeather, null, true)
 }
 
 // help
