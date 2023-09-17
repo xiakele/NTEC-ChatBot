@@ -12,12 +12,14 @@ import weather from './middleware/weather.js'
 import bx from './middleware/bx.js'
 import { getDomesticWeather } from './middleware/snippets/weatherDataFetcher.js'
 import { forecastGenerator } from './middleware/snippets/weatherFormatter.js'
+
 const config = JSON.parse(await readFile(new URL('config.json', import.meta.url)))
 const socksAgent = config.proxy ? new SocksProxyAgent(config.proxy) : undefined
 const bot = new Telegraf(config.token, { telegram: { agent: socksAgent } })
 const command = [
   { command: 'help', description: 'get help' },
   { command: 'echo', description: 'echo!' },
+  { command: 'bx', description: 'bx!' },
   { command: 'google', description: 'Google for you' },
   { command: 'wiki', description: 'Search Wikipedia' },
   { command: 'weather', description: 'Get weather info' }
