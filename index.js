@@ -9,6 +9,7 @@ import echo from './middleware/echo.js'
 import googleSearch from './middleware/googleSearch.js'
 import wikiSearch from './middleware/wikiSearch.js'
 import weather from './middleware/weather.js'
+import bx from './middleware/bx.js'
 import { getDomesticWeather } from './middleware/snippets/weatherDataFetcher.js'
 import { forecastGenerator } from './middleware/snippets/weatherFormatter.js'
 const config = JSON.parse(await readFile(new URL('config.json', import.meta.url)))
@@ -41,7 +42,7 @@ await bot.telegram.setMyCommands(command)
 
 // log received messages
 bot.use((ctx, next) => {
-  if (ctx.message.text && ctx.message.text.startsWith('/')) {
+  if (ctx.message.entities && ctx.message.entities.find(item => item.type === 'bot_command')) {
     console.log(`[${new Date().toISOString()}]` +
       '[COMMAND]' +
       `[from ${ctx.message.from.first_name}(${ctx.message.from.id}) in ${ctx.message.chat.id}]` +
@@ -86,6 +87,9 @@ bot.help(async ctx => {
 
 // echo
 bot.command('echo', async ctx => await echo(ctx))
+
+// bx
+bot.hears(/.*\/bx.*/, async ctx => await bx(ctx))
 
 // Request Handler
 async function requestHandler (ctx, requestFunc) {
