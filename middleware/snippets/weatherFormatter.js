@@ -103,7 +103,7 @@ export function domesticReplyGenerator (locationInfo, weatherData, type) {
     case 'daily':
       replyStr += '\n<b>未来五天天气：</b>\n'
       for (let i = 0; i < 5; i++) {
-        replyStr += `${weatherInfo.daily[i].date}  ` +
+        replyStr += `${weatherInfo.daily.data[i].date}  ` +
           `${weatherInfo.daily.data[i].condition.day}/${weatherInfo.daily.data[i].condition.night}  ` +
           `${weatherInfo.daily.data[i].minTemp}~${weatherInfo.daily.data[i].maxTemp}℃  ` +
           `${weatherInfo.daily.data[i].precipitation}mm\n`
