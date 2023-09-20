@@ -171,8 +171,8 @@ export function forecastGenerator (dailyData, hourlyData, name) {
   let replyStr = `<b>今日${name}天气预报</b>\n\n` +
     `<b>天气：</b>${dailyInfo.data[0].condition.day}/${dailyInfo.data[0].condition.night}\n` +
     `<b>温度：</b>${dailyInfo.data[0].minTemp}~${dailyInfo.data[0].maxTemp}℃\n` +
-    `<b>降雨量：</b>${dailyInfo.data[0].precipitation}mm`
-  replyStr += hourlyInfo.rainHours.length ? `<b>降雨时段：</b>${hourlyInfo.rainHours.join(', ')}\n` : '\n'
-  replyStr += `\n<b>更新时间：</b>${formatUpdateTime(dailyInfo.updateTime)}\n<b>数据来源：</b><a href="https://www.qweather.com">和风天气</a>`
+    `<b>降雨量：</b>${dailyInfo.data[0].precipitation}mm\n`
+  replyStr += hourlyInfo.rainHours.length ? `<b>降雨时段：</b>${hourlyInfo.rainHours.join(', ')}\n\n` : '\n'
+  replyStr += `<b>更新时间：</b>${formatUpdateTime(dailyInfo.updateTime)}\n<b>数据来源：</b><a href="https://www.qweather.com">和风天气</a>`
   return replyStr
 }
