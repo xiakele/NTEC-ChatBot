@@ -19,7 +19,7 @@ function locationDataHandler (data) {
 
 export default async function (ctx, agent, apiKeys) {
   const regex = /\/weather(?:\s(current|today|daily|hourly))?(\s.+)?/
-  const query = regex.exec(ctx.message.text)[2] || 'Pudong'
+  const query = regex.exec(ctx.message.text)[2] || '浦东 上海'
   const type = regex.exec(ctx.message.text)[1] || 'current'
   const locationInfo = locationDataHandler(await getLocation(query, agent))
   const country = locationInfo.place[3]
