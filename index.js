@@ -67,10 +67,10 @@ async function fetchWeather () {
   const hourlyData = await getDomesticWeather(config.autoFetchWeather.location, 'hourly', config.apiKeys.qweather)
   const replyStr = forecastGenerator(dailyData, hourlyData, config.autoFetchWeather.location.name)
   console.log(chalk.inverse('Fetch complete'))
-  chatIds.forEach(async chatId => {
+  for (const chatId in chatIds) {
     const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML', disable_web_page_preview: true })
     await bot.telegram.pinChatMessage(chatId, message.message_id)
-  })
+  }
   console.log(chalk.inverse('Send weather info complete\n'))
 }
 if (config.autoFetchWeather && config.autoFetchWeather.enabled) {
@@ -100,7 +100,7 @@ async function errHandler (err, ctx) {
     case 'No Search Results':
       return await ctx.reply('无数据', { reply_to_message_id: ctx.message.message_id })
     default:
-      console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
+      console.log(chalk.bgRed(`Error occurred when handling the following command:'${ctx.message.text}'\n${err}`))
       return await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
   }
 }
