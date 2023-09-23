@@ -1,6 +1,6 @@
 function queryExtractor (regex, msgTxt) {
   if (!regex.test(msgTxt)) {
-    throw new Error('No query string')
+    throw new Error('No Query String')
   }
   return regex.exec(msgTxt)[1]
 }

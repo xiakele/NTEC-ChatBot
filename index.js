@@ -92,17 +92,24 @@ bot.command('echo', async ctx => await echo(ctx))
 // bx
 bot.hears(/.*\/bx.*/, async ctx => await bx(ctx))
 
+// Error Handler
+async function errHandler (err, ctx) {
+  switch (err.message) {
+    case 'No Query String':
+      return await ctx.reply('请输入搜索内容', { reply_to_message_id: ctx.message.message_id })
+    case 'No Search Results':
+      return await ctx.reply('无数据', { reply_to_message_id: ctx.message.message_id })
+    default:
+      console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
+      return await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
+  }
+}
+
 // Request Handler
 async function requestHandler (ctx, requestFunc) {
   const page = await browser.newPage()
   await requestFunc(ctx, page)
-    .catch(async err => {
-      if (err.message === 'No query string') {
-        return await ctx.reply('请输入搜索内容', { reply_to_message_id: ctx.message.message_id })
-      }
-      console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
-      return await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
-    })
+    .catch(async err => errHandler(err, ctx))
     .finally(async () => await page.close())
 }
 
@@ -115,13 +122,7 @@ bot.command('wiki', async ctx => await requestHandler(ctx, wikiSearch))
 // Get weather info
 bot.command('weather', async ctx => {
   await weather(ctx, socksAgent, config.apiKeys)
-    .catch(async err => {
-      if (err.message === 'No Search Results') {
-        return await ctx.reply('无数据', { reply_to_message_id: ctx.message.message_id })
-      }
-      console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
-      return await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
-    })
+    .catch(async err => errHandler(err, ctx))
 })
 
 console.log(chalk.inverse('Bot is online.\n'))
