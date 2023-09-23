@@ -6,8 +6,7 @@ import { readFile } from 'node:fs/promises'
 import { job } from 'cron'
 
 import echo from './middleware/echo.js'
-import googleSearch from './middleware/googleSearch.js'
-import wikiSearch from './middleware/wikiSearch.js'
+import { googleSearch, wikiSearch } from './middleware/search.js'
 import weather from './middleware/weather.js'
 import bx from './middleware/bx.js'
 import { getDomesticWeather } from './middleware/snippets/weatherDataFetcher.js'
@@ -98,8 +97,11 @@ async function requestHandler (ctx, requestFunc) {
   const page = await browser.newPage()
   await requestFunc(ctx, page)
     .catch(async err => {
+      if (err.message === 'No query string') {
+        return await ctx.reply('请输入搜索内容', { reply_to_message_id: ctx.message.message_id })
+      }
       console.log(chalk.bgRed(`Error occured when handling the following command:'${ctx.message.text}'\n${err}`))
-      await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
+      return await ctx.reply('发生错误', { reply_to_message_id: ctx.message.message_id })
     })
     .finally(async () => await page.close())
 }
