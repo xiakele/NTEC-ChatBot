@@ -67,7 +67,7 @@ async function fetchWeather () {
   const hourlyData = await getDomesticWeather(config.autoFetchWeather.location, 'hourly', config.apiKeys.qweather)
   const replyStr = forecastGenerator(dailyData, hourlyData, config.autoFetchWeather.location.name)
   console.log(chalk.inverse('Fetch complete'))
-  for (const chatId in chatIds) {
+  for (const chatId of chatIds) {
     const message = await bot.telegram.sendMessage(chatId, replyStr, { parse_mode: 'HTML', disable_web_page_preview: true })
     await bot.telegram.pinChatMessage(chatId, message.message_id)
   }
