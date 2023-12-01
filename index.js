@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises'
 import { job } from 'cron'
 
 import echo from './middleware/echo.js'
-import { googleSearch, wikiSearch } from './middleware/search.js'
+import { googleSearch, wikiSearch, oaldSearch } from './middleware/search.js'
 import weather from './middleware/weather.js'
 import bx from './middleware/bx.js'
 import { getDomesticWeather } from './middleware/snippets/weatherDataFetcher.js'
@@ -21,6 +21,7 @@ const command = [
   { command: 'bx', description: 'bx!' },
   { command: 'google', description: 'Google for you' },
   { command: 'wiki', description: 'Search Wikipedia' },
+  { command: 'dict', description: 'OALD lookup' },
   { command: 'weather', description: 'Get weather info' }
 ]
 
@@ -118,6 +119,9 @@ bot.command('google', async ctx => await requestHandler(ctx, googleSearch))
 
 // Wikipedia Search
 bot.command('wiki', async ctx => await requestHandler(ctx, wikiSearch))
+
+// OALD Search
+bot.command('dict', async ctx => await requestHandler(ctx, oaldSearch))
 
 // Get weather info
 bot.command('weather', async ctx => {
