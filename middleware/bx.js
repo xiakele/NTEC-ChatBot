@@ -5,16 +5,16 @@ async function reply(ctx, bxUser) {
 
 	if (bxUser.username) {
 		return ctx.replyWithHTML(`<a href="tg://user?id=${ctx.message.from.id}">${ctx.message.from.first_name}</a>`
-      + '拜谢了'
-      + `<a href="tg://user">${bxUser.username}</a>`
-      + '！',
+			+ '拜谢了'
+			+ `<a href="tg://user">${bxUser.username}</a>`
+			+ '！',
 		);
 	}
 
 	return ctx.replyWithHTML(`<a href="tg://user?id=${ctx.message.from.id}">${ctx.message.from.first_name}</a>`
-      + '拜谢了'
-      + `<a href="tg://user?id=${bxUser.id}">${bxUser.firstName}</a>`
-      + '！',
+			+ '拜谢了'
+			+ `<a href="tg://user?id=${bxUser.id}">${bxUser.firstName}</a>`
+			+ '！',
 	);
 }
 

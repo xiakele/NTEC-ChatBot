@@ -46,9 +46,9 @@ await bot.telegram.setMyCommands(command);
 bot.use((ctx, next) => {
 	if (ctx.message.entities && ctx.message.entities.some(item => item.type === 'bot_command')) {
 		console.log(`[${new Date().toISOString()}]`
-      + '[COMMAND]'
-      + `[from ${ctx.message.from.first_name}(${ctx.message.from.id}) in ${ctx.message.chat.id}]`
-      + `: '${ctx.message.text}'`);
+			+ '[COMMAND]'
+			+ `[from ${ctx.message.from.first_name}(${ctx.message.from.id}) in ${ctx.message.chat.id}]`
+			+ `: '${ctx.message.text}'`);
 		return next();
 	}
 });

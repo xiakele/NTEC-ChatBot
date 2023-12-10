@@ -2,7 +2,7 @@
 function formatUpdateTime(time) {
 	const dateObject = new Date(time);
 	return `${dateObject.getFullYear()}-${dateObject.getMonth() + 1}-${dateObject.getDate()} `
-        + `${dateObject.getHours().toString().padStart(2, '0')}:${dateObject.getMinutes().toString().padStart(2, '0')}`;
+		+ `${dateObject.getHours().toString().padStart(2, '0')}:${dateObject.getMinutes().toString().padStart(2, '0')}`;
 }
 
 // 处理QWeather天气数据
@@ -91,17 +91,17 @@ function weatherApiDataHandler(data) {
 export function domesticReplyGenerator(locationInfo, weatherData, type) {
 	const weatherInfo = qweatherDataHandler(weatherData);
 	let replyString = `<b>位置：</b>${locationInfo.placeStr()}\n\n<b>当前天气：</b>\n`
-    + `天气：${weatherInfo.current.condition}，${weatherInfo.current.rainForecast}\n`
-    + `温度：${weatherInfo.current.temp}℃\n`
-    + `体感温度：${weatherInfo.current.feelsLike}℃\n`
-    + `<b>更新时间：</b>${weatherInfo.current.updateTime}\n`;
+		+ `天气：${weatherInfo.current.condition}，${weatherInfo.current.rainForecast}\n`
+		+ `温度：${weatherInfo.current.temp}℃\n`
+		+ `体感温度：${weatherInfo.current.feelsLike}℃\n`
+		+ `<b>更新时间：</b>${weatherInfo.current.updateTime}\n`;
 	switch (type) {
 		case 'today': {
 			replyString += '\n<b>今日天气：</b>\n'
-        + `天气：${weatherInfo.daily.data[0].condition.day}/${weatherInfo.daily.data[0].condition.night}\n`
-        + `温度：${weatherInfo.daily.data[0].minTemp}~${weatherInfo.daily.data[0].maxTemp}℃\n`
-        + `降水量：${weatherInfo.daily.data[0].precipitation}mm\n`
-        + `<b>更新时间：</b>${weatherInfo.daily.updateTime}\n`;
+				+ `天气：${weatherInfo.daily.data[0].condition.day}/${weatherInfo.daily.data[0].condition.night}\n`
+				+ `温度：${weatherInfo.daily.data[0].minTemp}~${weatherInfo.daily.data[0].maxTemp}℃\n`
+				+ `降水量：${weatherInfo.daily.data[0].precipitation}mm\n`
+				+ `<b>更新时间：</b>${weatherInfo.daily.updateTime}\n`;
 			break;
 		}
 
@@ -109,9 +109,9 @@ export function domesticReplyGenerator(locationInfo, weatherData, type) {
 			replyString += '\n<b>未来五天天气：</b>\n';
 			for (let i = 0; i < 5; i++) {
 				replyString += `${weatherInfo.daily.data[i].date}  `
-          + `${weatherInfo.daily.data[i].condition.day}/${weatherInfo.daily.data[i].condition.night}  `
-          + `${weatherInfo.daily.data[i].minTemp}~${weatherInfo.daily.data[i].maxTemp}℃  `
-          + `${weatherInfo.daily.data[i].precipitation}mm\n`;
+					+ `${weatherInfo.daily.data[i].condition.day}/${weatherInfo.daily.data[i].condition.night}  `
+					+ `${weatherInfo.daily.data[i].minTemp}~${weatherInfo.daily.data[i].maxTemp}℃  `
+					+ `${weatherInfo.daily.data[i].precipitation}mm\n`;
 			}
 
 			replyString += `<b>更新时间：</b>${weatherInfo.daily.updateTime}\n`;
@@ -122,9 +122,9 @@ export function domesticReplyGenerator(locationInfo, weatherData, type) {
 			replyString += '\n<b>未来12小时天气：</b>\n';
 			for (let i = 0; i < 12; i++) {
 				replyString += `${weatherInfo.hourly.data[i].time}  `
-          + `${weatherInfo.hourly.data[i].condition}  `
-          + `${weatherInfo.hourly.data[i].temp}℃  `
-          + `${weatherInfo.hourly.data[i].precipitation}mm\n`;
+					+ `${weatherInfo.hourly.data[i].condition}  `
+					+ `${weatherInfo.hourly.data[i].temp}℃  `
+					+ `${weatherInfo.hourly.data[i].precipitation}mm\n`;
 			}
 
 			replyString += `<b>更新时间：</b>${weatherInfo.hourly.updateTime}\n`;
@@ -141,15 +141,15 @@ export function domesticReplyGenerator(locationInfo, weatherData, type) {
 export function abroadReplyGenerator(locationInfo, weatherData, type) {
 	const weatherInfo = weatherApiDataHandler(weatherData);
 	let replyString = `<b>位置：</b>${locationInfo.placeStr()}\n\n<b>当前天气：</b>\n`
-    + `天气：${weatherInfo.current.condition}\n`
-    + `温度：${weatherInfo.current.temp}℃\n`
-    + `体感温度：${weatherInfo.current.feelsLike}℃\n`;
+		+ `天气：${weatherInfo.current.condition}\n`
+		+ `温度：${weatherInfo.current.temp}℃\n`
+		+ `体感温度：${weatherInfo.current.feelsLike}℃\n`;
 	switch (type) {
 		case 'today': {
 			replyString += '\n<b>今日天气：</b>\n'
-        + `天气：${weatherInfo.daily[0].condition}\n`
-        + `温度：${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n`
-        + `降雨概率：${weatherInfo.daily[0].rainProbability}%`;
+				+ `天气：${weatherInfo.daily[0].condition}\n`
+				+ `温度：${weatherInfo.daily[0].minTemp}~${weatherInfo.daily[0].maxTemp}℃\n`
+				+ `降雨概率：${weatherInfo.daily[0].rainProbability}%`;
 			if (weatherInfo.daily[0].rainProbability) {
 				replyString += weatherInfo.daily[0].willRain && weatherInfo.daily[0].rainHours.length > 0 ? `\n降雨时段：${weatherInfo.daily[0].rainHours.join(', ')}\n` : '（无显著降雨）\n';
 			} else {
@@ -179,7 +179,7 @@ export function abroadReplyGenerator(locationInfo, weatherData, type) {
 	}
 
 	replyString += `<b>更新时间：</b>${weatherInfo.updateTime}\n`
-    + '\n<b>数据来源：</b><a href="https://www.weatherapi.com/">WeatherAPI</a>';
+		+ '\n<b>数据来源：</b><a href="https://www.weatherapi.com/">WeatherAPI</a>';
 	return replyString;
 }
 
@@ -188,9 +188,9 @@ export function forecastGenerator(dailyData, hourlyData, name) {
 	const dailyInfo = qweatherDataHandler(dailyData).daily;
 	const hourlyInfo = qweatherDataHandler(hourlyData).hourly;
 	let replyString = `<b>今日${name}天气预报</b>\n\n`
-    + `<b>天气：</b>${dailyInfo.data[0].condition.day}/${dailyInfo.data[0].condition.night}\n`
-    + `<b>温度：</b>${dailyInfo.data[0].minTemp}~${dailyInfo.data[0].maxTemp}℃\n`
-    + `<b>降雨量：</b>${dailyInfo.data[0].precipitation}mm\n`;
+		+ `<b>天气：</b>${dailyInfo.data[0].condition.day}/${dailyInfo.data[0].condition.night}\n`
+		+ `<b>温度：</b>${dailyInfo.data[0].minTemp}~${dailyInfo.data[0].maxTemp}℃\n`
+		+ `<b>降雨量：</b>${dailyInfo.data[0].precipitation}mm\n`;
 	replyString += hourlyInfo.rainHours.length > 0 ? `<b>降雨时段：</b>${hourlyInfo.rainHours.join(', ')}\n\n` : '\n';
 	replyString += `<b>更新时间：</b>${formatUpdateTime(dailyInfo.updateTime)}\n<b>数据来源：</b><a href="https://www.qweather.com">和风天气</a>`;
 	return replyString;

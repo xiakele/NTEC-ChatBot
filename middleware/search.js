@@ -51,7 +51,7 @@ export async function oaldSearch(ctx, page) {
 	const strippedSenses = (senses.length <= 3) ? senses : [...senses.slice(0, 3), '...'];
 	await ctx.replyWithHTML(
 		`<b><a href="${page.url()}">${word}</a> ${phon}</b>\n\n`
-    + strippedSenses.join('\n'),
+		+ strippedSenses.join('\n'),
 		{reply_to_message_id: ctx.message.message_id},
 	);
 }

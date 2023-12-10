@@ -69,7 +69,7 @@ export async function getDomesticWeather(location, type, apiKey) {
 // 获取WeatherAPI数据
 export async function getAbroadWeather(location, agent, apiKey) {
 	return fetch('https://api.weatherapi.com/v1/forecast.json?'
-    + `key=${apiKey}&q=${location.lat},${location.lon}&lang=zh&days=3`, {agent})
+		+ `key=${apiKey}&q=${location.lat},${location.lon}&lang=zh&days=3`, {agent})
 		.then(response => response.json())
 		.then(data => {
 			if (data.error) {
