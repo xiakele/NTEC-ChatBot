@@ -1,5 +1,5 @@
-import {readFile} from 'node:fs/promises';
 import process from 'node:process';
+import {JSONFilePreset} from 'lowdb/node';
 import puppeteer from 'puppeteer';
 import {Telegraf} from 'telegraf';
 import chalk from 'chalk';
@@ -11,8 +11,10 @@ import weather from './middleware/weather.js';
 import bx from './middleware/bx.js';
 import {getDomesticWeather} from './middleware/snippets/weather-data-fetcher.js';
 import {forecastGenerator} from './middleware/snippets/weather-formatter.js';
+import {reminderProcessor, checkReminder} from './middleware/reminder.js';
 
-const config = JSON.parse(await readFile(new URL('config.json', import.meta.url)));
+const configDatabase = await JSONFilePreset(new URL('config.json', import.meta.url), {});
+const config = configDatabase.data;
 const socksAgent = config.proxy ? new SocksProxyAgent(config.proxy) : undefined;
 const bot = new Telegraf(config.token, {telegram: {agent: socksAgent}});
 const command = [
@@ -23,6 +25,7 @@ const command = [
 	{command: 'wiki', description: 'Search Wikipedia'},
 	{command: 'dict', description: 'OALD lookup'},
 	{command: 'weather', description: 'Get weather info'},
+	{command: 'reminder', description: 'Set reminders'},
 ];
 
 process.on('SIGINT', () => {
@@ -84,6 +87,9 @@ if (config.autoFetchWeather && config.autoFetchWeather.enabled) {
 	job('30 0 6 * * *', fetchWeather, null, true);
 }
 
+// Set chronjob for reminder
+job('0 * * * * *', () => checkReminder(bot), null, true);
+
 // Help
 bot.help(async ctx => {
 	let content = '支持下列指令：';
@@ -140,6 +146,9 @@ bot.command('weather', async ctx => {
 	await weather(ctx, socksAgent, config.apiKeys)
 		.catch(async error => errorHandler(error, ctx));
 });
+
+// Reminder
+bot.command('reminder', async ctx => reminderProcessor(ctx));
 
 console.log(chalk.inverse('Bot is online.\n'));
 bot.launch({allowedUpdates: ['message']});

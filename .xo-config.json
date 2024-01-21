@@ -1,9 +1,15 @@
 {
   "rules": {
     "camelcase": [
-      2,
+      "error",
       {
         "properties": "never"
+      }
+    ],
+    "new-cap": [
+      "error",
+      {
+        "capIsNewExceptionPattern": "JSONFilePreset"
       }
     ]
   }
