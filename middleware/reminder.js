@@ -61,7 +61,7 @@ async function setReminder(ctx) {
 		}
 	}
 
-	data.time.humanReadable = new Date(data.time.target).toLocaleString().slice(0, -3);
+	data.time.humanReadable = new Date(data.time.target).toLocaleString('zh-cn').slice(0, -3);
 	await database.update(reminders => {
 		if (reminders[userId]) {
 			reminders[userId].push(data);
