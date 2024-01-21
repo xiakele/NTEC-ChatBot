@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer';
 import {Telegraf} from 'telegraf';
 import chalk from 'chalk';
 import {SocksProxyAgent} from 'socks-proxy-agent';
-import {job} from 'cron';
+import {CronJob} from 'cron';
 import echo from './middleware/echo.js';
 import {googleSearch, wikiSearch, oaldSearch} from './middleware/search.js';
 import weather from './middleware/weather.js';
@@ -84,11 +84,13 @@ async function fetchWeather() {
 }
 
 if (config.autoFetchWeather && config.autoFetchWeather.enabled) {
-	job('30 0 6 * * *', fetchWeather, null, true);
+	const weatherJob = new CronJob('30 0 6 * * *', fetchWeather);
+	weatherJob.start();
 }
 
 // Set chronjob for reminder
-job('0 * * * * *', () => checkReminder(bot), null, true);
+const reminderJob = new CronJob('0 * * * * *', () => checkReminder(bot));
+reminderJob.start();
 
 // Help
 bot.help(async ctx => {
